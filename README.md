@@ -1,6 +1,6 @@
-# NumCheck
+# NumChecker
 
-NumCheck is a simple webapp for validating and checking the network carrier of a number.
+NumChecker is a simple webapp for validating and checking the network carrier of a number.
 
 ## Stack
 
