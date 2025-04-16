@@ -3,17 +3,14 @@ import { useState, useEffect } from 'react'
 import { FcPhoneAndroid } from "react-icons/fc";
 import { MdSearch } from "react-icons/md";
 
-const countryCodes = [
-  { code: '+1', name: 'United States' },
-  { code: '+44', name: 'United Kingdom' },
-  { code: '+91', name: 'India' },
-  { code: '+234', name: 'Nigeria' },
-  { code: '+81', name: 'Japan' },
-  { code: '+81', name: 'Japan' },
-];
+type country = {
+  name: string,
+  code: string
+}
 
 const App = () => {
   const [selectedCode, setSelectedCode] = useState("");
+  const [countryCodes, setCountrycode] = useState<country[]>([]);
   const [number, setNumber] = useState("");
 
 
@@ -23,6 +20,28 @@ const App = () => {
     setNumber(formattedValue);
   }
 
+  useEffect(()=>{
+    const fetchCountrycode = async ()=>{
+      try {
+        const res = await fetch("https://restcountries.com/v3.1/all");
+        const data = await res.json();
+        const formattedCountries: country[] = data.map((country: any) => ({
+          name: country.name.common,
+          code: country.idd?.root && country.idd?.suffixes?.length > 0
+            ? country.idd.root + country.idd.suffixes[0]
+            : '',
+        })).filter((country: country) => country.code !== '');
+        const sortedCountries = formattedCountries.sort((a, b)=>{
+          return a.name.localeCompare(b.name);
+        })
+        setCountrycode(sortedCountries);
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    fetchCountrycode();
+  }, [])
+
   return (
     <div className='bg-gray-300 flex items-center justify-center h-screen'>
       <div className='w-md p-6 bg-white mx-auto shadow rounded-[16px]'>
@@ -31,30 +50,22 @@ const App = () => {
             <span><FcPhoneAndroid className='text-5xl ml-3' /></span>
             Number<span className='text-blue-600'>check</span></h1>
         </div>
-        <div className='flex items-center justify-between my-5'>
-          <div className='flex flex-col items-start'>
-            <label htmlFor="countryCode" className='text-[18px] font-medium text-gray-700 mb-2'  >Country code*</label>
-            <select name="countryCode" id="countryCode" onChange={(e)=> setSelectedCode(e.target.value)} value={selectedCode} className='w-full border border-gray-300 py-2 px-3 shadow-sm focus:outline-none overflow-y-auto rounded'>
+        <div className='flex flex-col gap-y-3 items-center my-5'>
+            <select name="countryCode" id="countryCode" onChange={(e)=> setSelectedCode(e.target.value)} value={selectedCode} className='w-full border border-gray-300 py-2 px-3 shadow-sm focus:outline-none overflow-y-auto rounded cursor-pointer'>
               <option value="" disabled hidden>country</option>
               {countryCodes.map((country)=>(
-                <option key={country.code} value={country.code}>
-                  <div className='flex items-center text-sm gap-3'>
-                    <span>{country.name}</span>
-                    <span>{country.code}</span>
-                  </div>
+                <option key={country.name} value={country.code}>
+                    {country.name}
+                    ({country.code})
                 </option>
               ))}
             </select>
-          </div>
-          <div className='flex flex-col items-start'>
-              <label htmlFor="tel" className='text-[18px] font-medium text-gray-700 mb-2'>Phone number</label>
-              <input type="number" placeholder='Enter a valid number' className='w-full border rounded border-gray-300 py-2 px-3 shadow-sm focus:outline-none' value={number} onChange={handleInputChange} />
-          </div>
+            <input type="number" placeholder='Enter a valid number' className='w-full border rounded border-gray-300 py-2 px-3 shadow-sm focus:outline-none' value={number} onChange={handleInputChange} />
         </div>
-        <button type='submit' className='w-full bg-blue-600 text-white font-semibold rounded-[16px] mb-3 py-3 px-2'>Verify</button>
+        <button type='submit' className='w-full bg-blue-600 cursor-pointer text-white font-semibold rounded-[16px] mb-3 py-3 px-2'>Verify</button>
         {/* result */}
         <div className='flex flex-col items-start'>
-          <h4 className='flex items-center text-xl gap-2'><MdSearch className='text-2xl' /> Search result for <span className='text-[18px] text-blue-600'>{number}</span></h4>
+          <h4 className='flex items-center text-xl gap-2'><MdSearch className='text-2xl' /> Search result for <span className='text-[18px] text-blue-600 '>{number}</span></h4>
           <div className='flex flex-col gap-1'>
             <div className='flex items-center gap-2 mt-3'>
               <h3 className='font-semibold text-gray-700'>Valid: </h3>
