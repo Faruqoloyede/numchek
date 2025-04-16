@@ -33,6 +33,10 @@ const App = () => {
     const value = e.target.value;
     const formattedValue = value.replace(/\D/g, ''); // Remove non-digit characters
     setNumber(formattedValue);
+
+    if(formattedValue === ""){
+      setNumberInfo(null);
+    }
   }
 
   useEffect(()=>{
